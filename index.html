@@ -1,703 +1,355 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <title>TravelSecure - AI Powered Travel Planner</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TravelSecure</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script>
-    const supabaseUrl = "https://ukxquwebxdsjklvafonu.supabase.co";
-    const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVreHF1d2VieGRzamtsdmFmb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2NzU4NTUsImV4cCI6MjA3NDI1MTg1NX0.sG5I3zdym2nHh8woGWvtIiA_CKby0B0x7SlFXm3DbQk";
-    const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
-    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
+        :root {
+            --primary-color: #16a085;
+            --secondary-color: #8e44ad;
+            --dark-color: #2c3e50;
+            --light-color: #f8f9fa;
+            --text-color: #34495e;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --font-family: 'Poppins', sans-serif;
+            --border-radius: 16px;
+            --shadow: 0 8px 30px rgba(0,0,0,0.07);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
+            font-family: var(--font-family);
+            line-height: 1.7;
+            background: #fdfdfd;
+            color: var(--text-color);
+            overflow-x: hidden;
         }
-        .page {
-            display: none;
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .view-container { animation: fadeIn 0.5s ease-out forwards; }
+        .section { padding: 4rem 0; }
+        .section-title { text-align: center; font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; color: var(--dark-color); }
+        .section-subtitle { text-align: center; font-size: 1.1rem; color: #667; margin-bottom: 3rem; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .header { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); color: #333; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; padding: 1rem 0; animation: fadeInDown 0.5s ease-out; }
+        .header-content { display: flex; justify-content: space-between; align-items: center; }
+        .logo-link { font-size: 1.8rem; font-weight: 800; text-decoration: none; cursor: pointer; background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-menu { list-style: none; display: flex; gap: 1.5rem; align-items: center; }
+        .nav-menu .nav-action { text-decoration: none; color: var(--dark-color); font-weight: 500; padding-bottom: 5px; position: relative; cursor: pointer; background: none; border: none; font-family: var(--font-family); font-size: 1rem; }
+        .nav-menu .nav-action:hover { color: var(--primary-color); }
+        .nav-menu .btn-login { font-size: 0.9rem; padding: 0.5rem 1.2rem; text-transform: none; }
+        .hero-landing { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; background-size: cover; background-position: center; color: #fff; height: 100vh; background-image: url('https://images.weserv.nl/?url=images.unsplash.com/photo-15980941383331-686375080080?q=80&w=2670&auto=format&fit=crop'); }
+        .hero-landing::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
+        .hero-content { position: relative; z-index: 1; }
+        .hero-content h1 { font-size: 4.5rem; font-weight: 800; animation: fadeInScaleUp 1s ease-out forwards; }
+        .hero-content p { font-size: 1.3rem; margin: 20px 0 40px; opacity: 0; animation: fadeInScaleUp 1s ease-out 0.5s forwards; }
+        .hero-content .btn { opacity: 0; animation: fadeInScaleUp 1s ease-out 1s forwards; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 4000; display: flex; justify-content: center; align-items: center; animation: fadeIn 0.3s; }
+        .auth-container { background: #fff; padding: 2.5rem; border-radius: var(--border-radius); box-shadow: 0 10px 40px rgba(0,0,0,0.1); width: 100%; max-width: 420px; color: var(--text-color); animation: fadeInScaleUp 0.4s ease-out forwards; text-align: center; position: relative; }
+        .modal-close-btn { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; color: #aaa; cursor: pointer; }
+        .auth-title { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--dark-color); }
+        .auth-subtitle { margin-bottom: 2rem; color: #667; }
+        .auth-form .form-group { margin-bottom: 1.5rem; text-align: left; }
+        .auth-form label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+        .auth-form input { width: 100%; padding: 0.8rem 1rem; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
+        .auth-toggle-link { margin-top: 1.5rem; font-size: 0.9rem; }
+        .auth-toggle-link span { color: var(--primary-color); cursor: pointer; font-weight: 500; }
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; }
+        .card { background: #fff; border-radius: var(--border-radius); box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .card:hover { transform: translateY(-8px); box-shadow: 0 12px 40px rgba(0,0,0,0.1); }
+        .card-img {
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            object-fit: cover;
+            transition: transform 0.3s ease;
         }
-        .page.active {
-            display: flex;
-            min-height: 100vh;
-            flex-direction: column;
+        .card:hover .card-img {
+            transform: scale(1.05);
         }
-        .auth-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background: radial-gradient(circle at top left, #1f2937, #111827);
+        .card-content { padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column; }
+        .card-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .card-text { color: #667; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem; flex-grow: 1; }
+        .card-price { font-size: 1.5rem; font-weight: bold; color: var(--primary-color); margin-bottom: 1rem; margin-top: auto; }
+        .btn { display: inline-block; padding: 0.8rem 1.8rem; border: none; border-radius: 50px; cursor: pointer; font-size: 1.1rem; font-weight: bold; text-decoration: none; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.3s ease; }
+        .btn-secondary { background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .btn-secondary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+        .btn:disabled { background: #e9ecef; color: #adb5bd; cursor: not-allowed; box-shadow: none; transform: none; }
+        .destination-hero { height: 40vh; display: flex; align-items: flex-end; padding: 3rem; color: #fff; position: relative; border-radius: var(--border-radius); overflow: hidden; margin-bottom: 2rem; background-size: cover; background-position: center; }
+        .destination-hero::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); }
+        .destination-hero-content { position: relative; z-index: 1; }
+        .destination-hero h1 { font-size: 3rem; }
+        .detail-layout { display: grid; grid-template-columns: 280px 1fr; gap: 2rem; align-items: flex-start; }
+        .detail-sidebar { position: sticky; top: 120px; }
+        .detail-sidebar h3 { font-size: 1.2rem; margin-bottom: 1rem; padding: 0 0.5rem; }
+        .tool-menu { list-style: none; background: #fff; border-radius: var(--border-radius); box-shadow: var(--shadow); overflow: hidden; padding: 0.5rem; }
+        .tool-menu-item { display: flex; align-items: center; padding: 1rem; cursor: pointer; border-left: 4px solid transparent; transition: all 0.3s ease; border-radius: 12px; }
+        .tool-menu-item:hover { background: var(--light-color); }
+        .tool-menu-item.active { background: #e8f5e9; font-weight: 500; color: var(--primary-color); }
+        .tool-menu-item .feature-icon { margin-right: 1rem; color: var(--primary-color); font-size: 1.2rem; width: 20px; text-align: center; }
+        .tool-content { min-height: 400px; background: #fff; border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 2rem; }
+        .tool-content h2 { text-align: left; margin-bottom: 1.5rem; }
+        .contact-card { display: flex; align-items: center; background: var(--light-color); padding: 1rem; border-radius: 12px; margin-bottom: 1rem; }
+        .contact-card .icon { font-size: 1.5rem; margin-right: 1rem; color: var(--primary-color); }
+        .contact-card .number { font-size: 1.2rem; font-weight: 500; }
+        .advisory-card { background: #fff8e1; border-left: 4px solid var(--warning-color); padding: 1rem; border-radius: 8px; margin-top: 0.5rem; display: flex; align-items: center; }
+        .advisory-card .icon { font-size: 1.2rem; margin-right: 1rem; color: var(--warning-color); }
+        .expense-form { display: flex; gap: 1rem; margin-bottom: 2rem; }
+        .expense-form input { width: 100%; padding: 0.8rem; border: 1px solid #ccc; border-radius: 8px; }
+        .expense-list { list-style: none; }
+        .expense-item { display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid #eee; }
+        .expense-item:last-child { border-bottom: none; }
+        .expense-total { text-align: right; font-size: 1.5rem; font-weight: bold; margin-top: 1rem; }
+        .skeleton-card { background: #fff; padding: 1.5rem; border-radius: var(--border-radius); margin-bottom: 1rem; }
+        .skeleton-line { height: 20px; border-radius: 4px; background: #eee; margin-bottom: 10px; animation: pulse 1.5s infinite ease-in-out; }
+        .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 50px; height: 10px; margin-top: 1rem; }
+        .progress-bar-inner { height: 100%; width: 0; background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); border-radius: 50px; transition: width 0.5s ease-out; }
+        .concierge-fab { position: fixed; bottom: 20px; right: 20px; background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); color: white; width: 60px; height: 60px; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 1001; transition: transform .3s; }
+        .chat-window { position: fixed; bottom: 90px; right: 20px; width: 350px; height: 500px; background: white; border-radius: var(--border-radius); box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 1000; display: flex; flex-direction: column; transform-origin: bottom right; transition: transform 0.3s ease, opacity 0.3s ease; }
+        .chat-window.closed { transform: scale(0); opacity: 0; }
+        .chat-header { padding: 1rem; background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); color: white; border-top-left-radius: var(--border-radius); border-top-right-radius: var(--border-radius); }
+        .chat-messages { flex-grow: 1; padding: 1rem; overflow-y: auto; }
+        .chat-message { display: flex; margin-bottom: 1rem; }
+        .chat-message.user { justify-content: flex-end; }
+        .message-bubble { padding: 0.7rem 1rem; border-radius: 20px; max-width: 80%; }
+        .message-bubble.bot { background: #f1f0f0; color: #333; border-bottom-left-radius: 4px; }
+        .message-bubble.user { background: var(--primary-color); color: white; border-bottom-right-radius: 4px; }
+        .message-bubble.bot.typing span { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #999; margin: 0 2px; animation: bounce 1s infinite; }
+        .message-bubble.bot.typing span:nth-child(2) { animation-delay: 0.2s; }
+        .message-bubble.bot.typing span:nth-child(3) { animation-delay: 0.4s; }
+        .chat-input { display: flex; border-top: 1px solid #eee; padding: 0.5rem; }
+        .chat-input input { flex-grow: 1; border: none; padding: 0.8rem; font-size: 1rem; }
+        .chat-input input:focus { outline: none; }
+        .chat-input button { background: none; border: none; font-size: 1.5rem; color: var(--primary-color); cursor: pointer; padding: 0.5rem; }
+        .news-card { display: flex; flex-wrap: wrap; gap: 1.5rem; background: #fff; border-radius: var(--border-radius); box-shadow: var(--shadow); margin-bottom: 1.5rem; overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .news-card:hover { transform: translateY(-5px); box-shadow: 0 12px 40px rgba(0,0,0,0.09); }
+        .news-card-img { width: 220px; height: 100%; object-fit: cover; flex-shrink: 0; }
+        .news-card-content { padding: 1.5rem; display: flex; flex-direction: column; justify-content: center; flex-grow: 1; }
+        .news-card-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--dark-color); }
+        .news-card-meta { font-size: 0.85rem; color: #777; margin-bottom: 0.75rem; }
+        .news-card-summary { font-size: 0.95rem; line-height: 1.6; }
+        .divider { border: 0; height: 1px; background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0)); margin: 4rem 0; }
+
+        @media (max-width: 768px) {
+            .detail-layout { grid-template-columns: 1fr; }
+            .detail-sidebar { position: static; top: 0; }
+            .news-card { flex-direction: column; }
+            .news-card-img { width: 100%; height: 200px; }
         }
-        .auth-form-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
-        /* Hide scrollbars for a cleaner look */
-        .overflow-auto-hide::-webkit-scrollbar {
-            display: none;
-        }
-        .overflow-auto-hide {
-            -ms-overflow-style: none; /* IE and Edge */
-            scrollbar-width: none; /* Firefox */
-        }
-        .nav-icon.active-nav {
-            color: #ffffff;
-            font-weight: bold;
-            transform: scale(1.1);
-        }
-        .nav-icon {
-            color: #d1d5db; /* A lighter gray for inactive icons */
-            transition: transform 0.2s, color 0.2s;
-        }
+
+        @keyframes pulse { 0% { background-color: #eee; } 50% { background-color: #e0e0e0; } 100% { background-color: #eee; } }
+        @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-4px); } }
+        @keyframes fadeInScaleUp { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="overflow-auto-hide">
+<body>
+    <div id="root"></div>
 
-<!-- ---------------- LOGIN / SIGNUP ---------------- -->
-<div id="login-page" class="page active">
-  <div class="auth-container">
-    <div class="auth-form-card p-8 md:p-10 rounded-3xl shadow-2xl max-w-sm w-full mx-4 border border-gray-100">
-      <div class="text-center mb-8">
-        <h1 class="text-4xl font-bold text-gray-900">TravelSecure</h1>
-        <p class="text-gray-700 mt-2">Your journey, secured.</p>
-      </div>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        
+        const destinationsData = [
+            { id: 'dest1', name: 'Goa', description: 'Sun, sand, and serene beaches await.', image: 'https://images.weserv.nl/?url=images.unsplash.com/photo-1590372793661-0c65a507535b?q=80&w=2574&auto=format&fit=crop', activities: 'beach,nightlife,food' },
+            { id: 'dest2', name: 'Delhi', description: 'A vibrant tapestry of history and modernity.', image: 'https://images.weserv.nl/?url=images.unsplash.com/photo-1605312891023-75a35a0efa0c?q=80&w=2574&auto=format&fit=crop', activities: 'history,food,culture,shopping' },
+            { id: 'dest3', name: 'Himachal Pradesh', description: 'Majestic mountains and thrilling treks.', image: 'https://images.weserv.nl/?url=images.unsplash.com/photo-1610620242594-553255152345?q=80&w=2574&auto=format&fit=crop', activities: 'trekking,mountains,nature,adventure' },
+            { id: 'dest4', name: 'Jaipur', description: 'The Pink City\'s royal palaces and forts.', image: 'https://images.weserv.nl/?url=images.unsplash.com/photo-1617128076036-5452f35f2d0d?q=80&w=2574&auto=format&fit=crop', activities: 'history,culture,architecture,shopping' },
+            { id: 'dest5', name: 'Mumbai', description: 'The bustling heart of India\'s film industry.', image: 'https://images.weserv.nl/?url=images.unsplash.com/photo-1562979314-1acedb700936?q=80&w=2574&auto=format&fit=crop', activities: 'city life,food,nightlife,culture' },
+            { id: 'dest6', name: 'Agra', description: 'Home to the iconic symbol of love, the Taj Mahal.', image: 'https://images.weserv.nl/?url=images.unsplash.com/photo-1564507592333-c60657eea523?q=80&w=2671&auto=format&fit=crop', activities: 'history,architecture,culture' },
+            { id: 'dest7', name: 'Varanasi', description: 'A spiritual journey on the banks of the Ganges.', image: 'https://images.weserv.nl/?url=images.unsplash.com/photo-1621377821361-ad27a2339c3e?q=80&w=2574&auto=format&fit=crop', activities: 'spirituality,culture,history,boating' },
+            { id: 'dest8', name: 'Rishikesh', description: 'The yoga capital of the world.', image: 'https://images.weserv.nl/?url=images.unsplash.com/photo-1609533355431-a20c313a233a?q=80&w=2574&auto=format&fit=crop', activities: 'spirituality,adventure,nature,yoga' },
+            { id: 'dest9', name: 'Ladakh', description: 'High-altitude desert with stunning monasteries.', image: 'https://images.weserv.nl/?url=images.unsplash.com/photo-1588147820412-8a9d1b645b37?q=80&w=2531&auto=format&fit=crop', activities: 'trekking,mountains,nature,adventure' }
+        ];
+        
+        const guidesData = [
+            { id: 'g1', location: "Delhi", name: "Ravi Kumar", description: "An expert in Mughal history and architecture.", price: 4000, image: "https://images.weserv.nl/?url=images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=2487&auto=format&fit=crop", specialty: "history" },
+            { id: 'g2', location: "Goa", name: "Priya Fernandes", description: "Specializes in beach tours and local cuisine.", price: 3500, image: "https://images.weserv.nl/?url=images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=2487&auto=format&fit=crop", specialty: "food" },
+            { id: 'g3', location: "Himachal Pradesh", name: "Tenzing Sharma", description: "Experienced guide for Himalayan treks.", price: 6000, image: "https://images.weserv.nl/?url=images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=2487&auto=format&fit=crop", specialty: "trekking" },
+            { id: 'g4', location: "Jaipur", name: "Gita Singh", description: "A storyteller bringing the history of Rajasthan's forts to life.", price: 4500, image: "https://images.weserv.nl/?url=images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=2561&auto=format&fit=crop", specialty: "history" },
+            { id: 'g5', location: "Mumbai", name: "Karan Malhotra", description: "Insider tours of Mumbai's street food and hidden gems.", price: 5000, image: "https://images.weserv.nl/?url=images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=2487&auto=format&fit=crop", specialty: "food" },
+            { id: 'g6', location: "Agra", name: "Alok Gupta", description: "Unveiling the stories and secrets of the Taj Mahal and Agra Fort.", price: 4200, image: "https://images.weserv.nl/?url=images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=2487&auto=format&fit=crop", specialty: "history" },
+            { id: 'g7', location: "Rishikesh", name: "Ganga Prasad", description: "Certified yoga guru and meditation guide for all levels.", price: 3000, image: "https://images.weserv.nl/?url=images.unsplash.com/photo-1564564321839-a6bb5dba71c7?q=80&w=2487&auto=format&fit=crop", specialty: "spirituality" },
+            { id: 'g8', location: "Varanasi", name: "Dev Mishra", description: "Guiding you through the spiritual labyrinth of Varanasi's ghats.", price: 3800, image: "https://images.weserv.nl/?url=images.unsplash.com/photo-1610088441120-d1a1b1a47b48?q=80&w=2487&auto=format&fit=crop", specialty: "culture" },
+            { id: 'g9', location: "Ladakh", name: "Stanzin Dorje", description: "Lead expeditions on the Markha Valley trek and other high-altitude routes.", price: 7500, image: "https://images.weserv.nl/?url=images.unsplash.com/photo-1542103749-8ef59b94f475?q=80&w=2670&auto=format&fit=crop", specialty: "trekking" }
+        ];
+        
+        const travelNewsData = [
+            { id: 'n1', title: 'New Vande Bharat Express to Connect Mumbai and Goa in Under 6 Hours', source: 'Times of India', date: 'Sep 28, 2025', summary: 'Indian Railways has launched a new high-speed Vande Bharat train, drastically cutting travel time between the two popular tourist hubs ahead of the peak season.', image: 'https://images.weserv.nl/?url=images.unsplash.com/photo-1690494431536-3335f6a6e2e7?q=80&w=2531&auto=format&fit=crop'},
+            { id: 'n2', title: 'Kaziranga National Park Reopens for Tourists After Monsoon Break', source: 'The Hindu', date: 'Sep 26, 2025', summary: 'The famed wildlife sanctuary in Assam, home to the one-horned rhinoceros, has officially reopened its gates for jeep safaris for the 2025-2026 tourist season.', image: 'https://images.weserv.nl/?url=images.unsplash.com/photo-1628099321397-8a4e37042322?q=80&w=2692&auto=format&fit=crop'},
+            { id: 'n4', title: 'Ladakh\'s Stok Kangri Peak Reopens with New Eco-Permit System', source: 'Outlook Traveller', date: 'Sep 25, 2025', summary: 'The iconic 6,153-meter peak, popular among trekkers, is accessible again with regulations aimed at preserving its fragile high-altitude ecosystem.', image: 'https://images.weserv.nl/?url=images.unsplash.com/photo-1587525333194-27976c6114a9?q=80&w=2574&auto=format&fit=crop'},
+            { id: 'n3', title: 'Kerala Announces New Policy Focusing on Sustainable Houseboat Tourism', source: 'Hindustan Times', date: 'Sep 24, 2025', summary: 'The state government aims to promote carbon-neutral travel and empower local communities by developing responsible tourism circuits in its serene backwaters and hills.', image: 'https://images.weserv.nl/?url=images.unsplash.com/photo-1602216056096-3b4046243a4b?q=80&w=2670&auto=format&fit=crop'},
+        ];
+        
+        const eatsData = [
+            { id: 'e1', location: "Delhi", name: "Karim's", description: "Iconic Mughlai cuisine near Jama Masjid.", cuisine: "Mughlai", image: "https://images.weserv.nl/?url=images.unsplash.com/photo-1603894584379-3e34b6387034?q=80&w=2535&auto=format&fit=crop" },
+            { id: 'e2', location: "Delhi", name: "Indian Accent", description: "Inventive, modern Indian dishes.", cuisine: "Modern Indian", image: "https://images.weserv.nl/?url=images.unsplash.com/photo-1565557623262-b51c2513a641?q=80&w=2670&auto=format&fit=crop" },
+            { id: 'e3', location: "Goa", name: "Britto's", description: "Famous beach shack with fresh seafood.", cuisine: "Seafood", image: "https://images.weserv.nl/?url=images.unsplash.com/photo-1625944022832-59a686d52e1f?q=80&w=2574&auto=format&fit=crop" },
+            { id: 'e4', location: "Goa", name: "The Black Sheep Bistro", description: "Goan food with a contemporary twist.", cuisine: "Goan Fusion", image: "https://images.weserv.nl/?url=images.unsplash.com/photo-1549402212-0545f53261b5?q=80&w=2592&auto=format&fit=crop" },
+            { id: 'e5', location: "Himachal Pradesh", name: "The Johnson's Cafe", description: "Cozy cafe in Manali with great trout.", cuisine: "Continental", image: "https://images.weserv.nl/?url=images.unsplash.com/photo-1555232431-7444a7f01e74?q=80&w=2574&auto=format&fit=crop" },
+            { id: 'e7', location: "Jaipur", name: "Laxmi Misthan Bhandar", description: "Legendary Rajasthani sweets and traditional thalis.", cuisine: "Rajasthani", image: "https://images.weserv.nl/?url=images.unsplash.com/photo-1564759364344-3c584f331f13?q=80&w=2574&auto=format&fit=crop" },
+            { id: 'e8', location: "Mumbai", name: "Leopold Cafe", description: "A historic and bustling cafe, an icon of the city.", cuisine: "Multi-cuisine", image: "https://images.weserv.nl/?url=images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2670&auto=format&fit=crop" },
+            { id: 'e9', location: "Varanasi", name: "Kashi Chaat Bhandar", description: "Famous for its delicious and authentic street-side chaat.", cuisine: "Street Food", image: "https://images.weserv.nl/?url=images.unsplash.com/photo-1589301760014-d929f39791e8?q=80&w=2574&auto=format&fit=crop" },
+            { id: 'e10', location: "Agra", name: "Pinch of Spice", description: "A fine-dining restaurant known for its rich Mughlai curries.", cuisine: "North Indian", image: "https://images.weserv.nl/?url=images.unsplash.com/photo-1563379926898-05f4575a45d8?q=80&w=2670&auto=format&fit=crop" },
+            { id: 'e11', location: "Rishikesh", name: "The Ganga View Cafe", description: "Enjoy organic food with a serene view of the river Ganges.", cuisine: "Healthy/Cafe", image: "https://images.weserv.nl/?url=images.unsplash.com/photo-1512132411229-c30391241dd8?q=80&w=2670&auto=format&fit=crop" },
+            { id: 'e12', location: "Ladakh", name: "The Tibetan Kitchen", description: "Authentic Tibetan delicacies like Momos and Thukpa.", cuisine: "Tibetan", image: "https://images.weserv.nl/?url=images.unsplash.com/photo-1628439443274-131158583445?q=80&w=2670&auto=format&fit=crop" }
+        ];
 
-      <!-- LOGIN -->
-      <form id="login-form" class="space-y-6">
-        <h2 class="text-2xl font-semibold text-center text-gray-800">Log In</h2>
-        <div>
-          <input type="email" id="login-username" placeholder="Email" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
-        </div>
-        <div>
-          <input type="password" id="login-password" placeholder="Password" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
-        </div>
-        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-blue-700 transition duration-300">
-          Sign In
-        </button>
-      </form>
+        const packingListData = { 'beach': ["Sunscreen", "Swimsuit", "Sunglasses", "Flip-flops"], 'nightlife': ["Stylish Outfit", "Comfortable Shoes"], 'trekking': ["Hiking Boots", "Warm Layers", "Backpack", "Water Bottle"], 'mountains': ["Thermal Wear", "Beanie", "Gloves"], 'history': ["Comfortable Walking Shoes", "Camera"], 'food': ["An Appetite for Adventure!"], 'boating': ["Light Jacket", "Waterproof Bag"], 'nature': ["Insect Repellent", "Binoculars"], 'culture': ["Respectful Attire", "Guidebook"], 'shopping': ["Extra Baggage Space"], 'spirituality': ["Modest Clothing"], 'adventure': ["First-Aid Kit"], 'relaxation': ["A Good Book"], 'architecture': ["Wide-angle Lens"], 'city life': ["Power Bank", "City Map"] };
+        const safetyData = { 'Goa': { emergencyNumbers: [ { name: 'Police', number: '100' }, { name: 'Ambulance', number: '108' }, { name: 'Tourist Police', number: '102' } ], advisories: [ "Be cautious of strong currents when swimming.", "Secure your belongings on crowded beaches." ] }, 'Delhi': { emergencyNumbers: [ { name: 'Police', number: '112' }, { name: 'Ambulance', number: '102' }, { name: 'Women Helpline', number: '1091' } ], advisories: [ "Be aware of your surroundings in crowded markets.", "Use official ride-hailing apps for transport." ] }, 'Himachal Pradesh': { emergencyNumbers: [ { name: 'Police', number: '100' }, { name: 'Ambulance', number: '108' }, { name: 'Disaster Management', number: '1077' } ], advisories: [ "Check weather conditions before trekking.", "Acclimatize properly to avoid altitude sickness." ] }, 'Jaipur': { emergencyNumbers: [ { name: 'Police', number: '100' }, { name: 'Ambulance', number: '108' }, { name: 'Tourist Helpline', number: '1363' } ], advisories: [ "Bargain respectfully while shopping in local markets.", "Stay hydrated, especially during summer months." ] }, 'Mumbai': { emergencyNumbers: [ { name: 'Police', number: '100' }, { name: 'Ambulance', number: '108' }, { name: 'Disaster Management', number: '1916' } ], advisories: [ "Be mindful of your belongings on crowded local trains.", "Avoid street food from unhygienic vendors during monsoon." ] }, 'Agra': { emergencyNumbers: [ { name: 'Police', number: '112' }, { name: 'Ambulance', number: '108' }, { name: 'Tourist Police', number: '9454402764' } ], advisories: [ "Be wary of unauthorized guides around monuments.", "Pre-book tickets for the Taj Mahal online to avoid long queues." ] }, 'Varanasi': { emergencyNumbers: [ { name: 'Police', number: '112' }, { name: 'Tourist Police', number: '0542-2506677' } ], advisories: [ "Be careful on the ghat steps as they can be slippery.", "Negotiate boat ride prices before boarding." ] }, 'Rishikesh': { emergencyNumbers: [ { name: 'Police', number: '112' }, { name: 'Uttarakhand Tourism', number: '135-2624147' } ], advisories: [ "Always wear a life jacket during water sports.", "Dress modestly, especially when visiting ashrams." ] }, 'Ladakh': { emergencyNumbers: [ { name: 'Police', number: '112' }, { name: 'SNM Hospital Leh', number: '01982-252014' } ], advisories: [ "Acclimatize for at least 48 hours upon arrival to prevent Acute Mountain Sickness (AMS).", "Carry sufficient cash as ATM connectivity can be unreliable." ] } };
 
-      <!-- SIGNUP -->
-      <form id="signup-form" class="space-y-6 hidden">
-        <h2 class="text-2xl font-semibold text-center text-gray-800">Sign Up</h2>
-        <div>
-          <input type="text" id="signup-fullname" placeholder="Full Name" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
-        </div>
-        <div>
-          <input type="email" id="signup-contact" placeholder="Email" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
-        </div>
-        <div>
-          <input type="password" id="signup-password" placeholder="Password" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
-        </div>
-        <!-- We’re not using the OTP UI since Supabase handles email flows -->
-        <button type="submit" id="signup-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-blue-700 transition duration-300">
-          Create Account
-        </button>
-      </form>
+        // --- AUTH MODAL & CORE COMPONENTS ---
+        const AuthModal = ({ onLogin, onSignup, onClose }) => { const [isLoginView, setIsLoginView] = useState(true); const LoginView = ({ onLogin, switchToSignup }) => { const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [error, setError] = useState(''); const handleSubmit = async (e) => { e.preventDefault(); setError(''); try { await onLogin({ email, password }); } catch (err) { setError(err.message || 'Invalid credentials'); } }; return ( <div className="auth-container"> <button onClick={onClose} className="modal-close-btn">&times;</button> <h2 className="auth-title">Welcome Back</h2> <p className="auth-subtitle">Login to book and manage your trips.</p> {error && <div style={{color: 'var(--danger-color)', marginBottom: '1rem'}}>{error}</div>} <form className="auth-form" onSubmit={handleSubmit}> <div className="form-group"><label>Email</label><input type="email" value={email} onChange={e => setEmail(e.target.value)} required /></div> <div className="form-group"><label>Password</label><input type="password" value={password} onChange={e => setPassword(e.target.value)} required /></div> <button type="submit" className="btn btn-secondary" style={{width: '100%'}}>Login</button> </form> <p className="auth-toggle-link">Don't have an account? <span onClick={switchToSignup}>Sign Up</span></p> </div> ); }; const SignupView = ({ onSignup, switchToLogin }) => { const [name, setName] = useState(''); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [otp, setOtp] = useState(''); const [step, setStep] = useState('details'); const [error, setError] = useState(''); const [isLoading, setIsLoading] = useState(false); const handleSendOtp = async (e) => { e.preventDefault(); setError(''); setIsLoading(true); console.log(`Sending OTP to ${email}...`); setTimeout(() => { setIsLoading(false); setStep('otp'); }, 1000); }; const handleVerifyAndSignup = async (e) => { e.preventDefault(); setError(''); setIsLoading(true); console.log(`Signing up with ${name}, ${email}, and OTP ${otp}...`); setTimeout(() => { setIsLoading(false); onSignup({name, email}); switchToLogin(); }, 1000); }; return ( <div className="auth-container"> <button onClick={onClose} className="modal-close-btn">&times;</button> {step === 'details' ? ( <> <h2 className="auth-title">Create Account</h2> <p className="auth-subtitle">Start your next adventure with TravelSecure.</p> {error && <div style={{color: 'var(--danger-color)', marginBottom: '1rem'}}>{error}</div>} <form className="auth-form" onSubmit={handleSendOtp}> <div className="form-group"><label>Full Name</label><input type="text" value={name} onChange={e => setName(e.target.value)} required /></div> <div className="form-group"><label>Email</label><input type="email" value={email} onChange={e => setEmail(e.target.value)} required /></div> <div className="form-group"><label>Password</label><input type="password" value={password} onChange={e => setPassword(e.target.value)} required /></div> <button type="submit" className="btn btn-secondary" style={{ width: '100%' }} disabled={isLoading}> {isLoading ? 'Sending OTP...' : 'Get OTP'} </button> </form> </> ) : ( <> <h2 className="auth-title">Verify Your Email</h2> <p className="auth-subtitle">Enter the 6-digit code sent to <br/><strong>{email}</strong></p> {error && <div style={{color: 'var(--danger-color)', marginBottom: '1rem'}}>{error}</div>} <form className="auth-form" onSubmit={handleVerifyAndSignup}> <div className="form-group"> <label>OTP Code</label> <input type="text" value={otp} onChange={e => setOtp(e.target.value)} required maxLength="6" style={{textAlign: 'center', letterSpacing: '0.5rem', fontSize: '1.2rem'}}/> </div> <button type="submit" className="btn btn-secondary" style={{ width: '100%' }} disabled={isLoading}> {isLoading ? 'Verifying...' : 'Verify & Sign Up'} </button> </form> </> )} <p className="auth-toggle-link">Already have an account? <span onClick={switchToLogin}>Login</span></p> </div> ); }; return ( <div className="modal-overlay" onClick={onClose}> <div onClick={(e) => e.stopPropagation()}> {isLoginView ? <LoginView onLogin={onLogin} switchToSignup={() => setIsLoginView(false)} /> : <SignupView onSignup={onSignup} switchToLogin={() => setIsLoginView(true)} />} </div> </div> ); };
+        const Header = ({ onBack, showBackButton, onLogout, isAuthenticated, onLoginClick }) => ( <header className="header"> <div className="container header-content"> {showBackButton ? <button onClick={onBack} className="logo-link nav-action" style={{fontSize: '1.2rem'}}>&larr; All Destinations</button> : <div className="logo-link">TravelSecure</div> } <ul className="nav-menu"> {isAuthenticated ? ( <li><button onClick={onLogout} className="nav-action">Logout</button></li> ) : ( <> <li><button onClick={onLoginClick} className="nav-action">Login</button></li> <li><button onClick={onLoginClick} className="btn btn-secondary btn-login">Sign Up</button></li> </> )} </ul> </div> </header> );
+        const LandingPage = ({ onExploreClick }) => ( <section className="hero-landing"> <div className="hero-content"><h1>Travel Smarter, Not Harder</h1><p>Your AI-powered adventure awaits.</p><button onClick={onExploreClick} className="btn btn-secondary">Explore Destinations</button></div> </section> );
+        const DestinationCard = ({ destination, onSelect }) => ( <div className="card" onClick={() => onSelect(destination)} style={{cursor: 'pointer'}}> <img src={destination.image} alt={destination.name} className="card-img" loading="lazy" /> <div className="card-content"> <h3 className="card-title">{destination.name}</h3> <p className="card-text">{destination.description}</p> </div> </div> );
+        const SkeletonLoader = () => ( <div className="skeleton-card" style={{ boxShadow: 'var(--shadow)', padding: '1.5rem', borderRadius: 'var(--border-radius)' }}><div className="skeleton-line" style={{height: '180px', marginBottom: '1rem'}}></div><div className="skeleton-line" style={{width: '60%', height: '24px'}}></div><div className="skeleton-line" style={{width: '90%'}}></div></div> );
+        const TravelNewsCard = ({ article }) => ( <div className="news-card"> <img src={article.image} alt={article.title} className="news-card-img" loading="lazy" /> <div className="news-card-content"> <h3 className="news-card-title">{article.title}</h3> <p className="news-card-meta"><strong>{article.source}</strong> - {article.date}</p> <p className="news-card-summary">{article.summary}</p> </div> </div> );
+        const TravelConcierge = ({ currentDestination }) => { const [isOpen, setIsOpen] = useState(false); const [messages, setMessages] = useState([{text: "Hello! I'm your AI Travel Concierge. How can I help you today?", sender: 'bot'}]); const [inputValue, setInputValue] = useState(''); const [isTyping, setIsTyping] = useState(false); const chatMessagesRef = useRef(null); useEffect(() => { if (chatMessagesRef.current) { chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight; } }, [messages, isTyping]); const getBotResponse = (userInput) => { const lowerInput = userInput.toLowerCase(); const location = currentDestination || "your area"; if (lowerInput.includes("weather")) { return `The weather in ${location} is currently pleasant and sunny. Perfect for sightseeing!`; } if (lowerInput.includes("recommend") && lowerInput.includes("restaurant")) { return `Of course! What cuisine are you in the mood for in ${location}?`; } if (lowerInput.includes("safe")) { return `For safety in ${location}, always be aware of your surroundings and keep valuables secure. I can provide local emergency numbers if you need them.`; } if (lowerInput.includes("help") || lowerInput.includes("emergency")) { return "If this is an emergency, please dial 112 immediately. I can also provide numbers for local police or hospitals if you tell me your current location."; } return "I'm still learning. Is there anything else I can help with, like restaurant recommendations or safety tips?"; }; const handleSendMessage = (e) => { e.preventDefault(); if (!inputValue.trim()) return; const userMessage = { text: inputValue, sender: 'user' }; setMessages(prev => [...prev, userMessage]); setInputValue(''); setIsTyping(true); setTimeout(() => { const botResponse = getBotResponse(inputValue); const botMessage = { text: botResponse, sender: 'bot' }; setIsTyping(false); setMessages(prev => [...prev, botMessage]); }, 1500); }; return ( <> <button className="concierge-fab" onClick={() => setIsOpen(!isOpen)}> <i className={isOpen ? "fas fa-times" : "fas fa-comment-dots"}></i> </button> <div className={`chat-window ${!isOpen ? 'closed' : ''}`}> <div className="chat-header"><h3>AI Travel Concierge</h3></div> <div className="chat-messages" ref={chatMessagesRef}> {messages.map((msg, index) => ( <div key={index} className={`chat-message ${msg.sender}`}> <div className={`message-bubble ${msg.sender}`}>{msg.text}</div> </div> ))} {isTyping && ( <div className="chat-message bot"> <div className="message-bubble bot typing"><span></span><span></span><span></span></div> </div> )} </div> <form className="chat-input" onSubmit={handleSendMessage}> <input type="text" placeholder="Ask me anything..." value={inputValue} onChange={(e) => setInputValue(e.target.value)} /> <button type="submit"><i className="fas fa-paper-plane"></i></button> </form> </div> </> ); };
+        
+        // --- TOOL COMPONENTS ---
+        const SafetyHubView = ({ location }) => { const data = safetyData[location]; if (!data) return <p style={{textAlign: 'center', padding: '2rem'}}>No safety information available for this location yet.</p>; return ( <div> <h2>Local Safety Hub</h2> <h3 style={{marginTop: '2rem', marginBottom: '1rem'}}>Emergency Contacts</h3> <div> {data.emergencyNumbers.map(contact => ( <div key={contact.name} className="contact-card"> <i className="fas fa-phone-alt icon"></i> <div>{contact.name}</div> <div style={{marginLeft: 'auto'}} className="number">{contact.number}</div> </div> ))} </div> <h3 style={{marginTop: '2rem', marginBottom: '1rem'}}>Local Advisories</h3> <div> {data.advisories.map((advisory, index) => ( <div key={index} className="advisory-card"> <i className="fas fa-exclamation-triangle icon"></i> <span>{advisory}</span> </div> ))} </div> </div> ); };
+        const ExpenseTrackerView = () => { const [expenses, setExpenses] = useState([]); const [description, setDescription] = useState(''); const [amount, setAmount] = useState(''); const descriptionInputRef = useRef(null); const handleAddExpense = (e) => { e.preventDefault(); if (!description || !amount) return; setExpenses([...expenses, { description, amount: parseFloat(amount) }]); setDescription(''); setAmount(''); descriptionInputRef.current.focus(); }; const total = expenses.reduce((sum, expense) => sum + expense.amount, 0); return ( <div> <h2>Smart Expense Tracker</h2> <form onSubmit={handleAddExpense} className="expense-form"> <input type="text" ref={descriptionInputRef} placeholder="Expense description (e.g., Lunch)" value={description} onChange={(e) => setDescription(e.target.value)} required /> <input type="number" placeholder="Amount (₹)" value={amount} onChange={(e) => setAmount(e.target.value)} required /> <button type="submit" className="btn btn-secondary" style={{textTransform: 'none'}}>Add</button> </form> <ul className="expense-list"> {expenses.length > 0 && expenses.map((expense, index) => ( <li key={index} className="expense-item"> <span>{expense.description}</span> <span>₹{expense.amount.toLocaleString()}</span> </li> ))} </ul> {expenses.length > 0 && <div className="expense-total">Total: ₹{total.toLocaleString()}</div>} </div> ); };
+        const AiPlannerView = ({ interests }) => { const [plan, setPlan] = useState(null); const [isLoading, setIsLoading] = useState(false); const [days, setDays] = useState(3); const [customInterest, setCustomInterest] = useState(''); const generatePlan = (e) => { e.preventDefault(); setIsLoading(true); setPlan(null); setTimeout(() => { const allInterests = interests.split(','); const primaryInterest = allInterests[0] || 'sightseeing'; const secondaryInterest = allInterests[1] || 'local culture'; const finalInterests = customInterest || primaryInterest; const generatedPlan = Array.from({ length: days }, (_, i) => ({ day: i + 1, title: i === 0 ? `Arrival & ${primaryInterest}` : `Exploring ${secondaryInterest}`, activities: [ `Morning: Discover a hidden gem related to ${finalInterests}.`, `Afternoon: Savor the local cuisine at a highly-rated spot.`, `Evening: Enjoy a relaxing evening activity or explore local nightlife.` ] })); setPlan(generatedPlan); setIsLoading(false); }, 1500); }; return (<div> <h2>AI Itinerary Planner</h2> <form onSubmit={generatePlan} style={{display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end', marginBottom: '2rem'}}> <div style={{flex: '1 1 100px'}}><label>Days</label><input type="number" value={days} onChange={e => setDays(e.target.value)} min="1" required style={{width: '100%', padding: '0.8rem', border: '1px solid #ccc', borderRadius: '8px'}} /></div> <div style={{flex: '2 1 200px'}}><label>Interests (e.g., food, history)</label><input type="text" placeholder={interests} value={customInterest} onChange={e => setCustomInterest(e.target.value)} style={{width: '100%', padding: '0.8rem', border: '1px solid #ccc', borderRadius: '8px'}} /></div> <button type="submit" className="btn btn-secondary" disabled={isLoading}>{isLoading ? 'Generating...' : 'Generate Plan'}</button> </form> {isLoading && ( <><SkeletonLoader /><SkeletonLoader /></> )} {plan && plan.map(dayPlan => ( <div key={dayPlan.day} className="card" style={{marginBottom: '1rem'}}> <div className="card-content"> <h3 className="card-title">Day {dayPlan.day}: {dayPlan.title}</h3> <ul style={{listStyle: 'none', paddingLeft: 0}}>{dayPlan.activities.map((act, i) => <li key={i} style={{padding: '0.5rem 0', borderBottom: '1px solid #eee'}}>{act}</li>)}</ul> </div> </div> ))} </div>); };
+        const GuidesView = ({ location, onBook, bookedGuides }) => { const [filter, setFilter] = useState('all'); const availableGuides = guidesData.filter(g => g.location === location && (filter === 'all' || g.specialty === filter)); return ( <div> <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem'}}> <h2>Verified Guides</h2> <select onChange={(e) => setFilter(e.target.value)} style={{padding: '0.5rem', borderRadius: '8px'}}> <option value="all">All Specialties</option> <option value="history">History</option> <option value="food">Food</option> <option value="trekking">Trekking</option> <option value="spirituality">Spirituality</option> <option value="culture">Culture</option> </select> </div> {availableGuides.length > 0 ? ( <div className="cards-grid"> {availableGuides.map(guide => { const isBooked = bookedGuides.includes(guide.id); return ( <div className="card" key={guide.id}> <img src={guide.image} alt={guide.name} className="card-img" loading="lazy" /> <div className="card-content"> <h3 className="card-title">{guide.name}</h3> <p className="card-text">{guide.description}</p> <p className="card-price">₹{guide.price.toLocaleString()}/day</p> <button className="btn btn-secondary" onClick={() => onBook(guide)} disabled={isBooked}> {isBooked ? 'Booked!' : 'Book Now'} </button> </div> </div> ); })} </div> ) : ( <p style={{textAlign: 'center', padding: '2rem'}}>No guides found for the selected specialty.</p> )} </div> ); };
+        const AiLocalEatsView = ({ location }) => { const availableEats = eatsData.filter(e => e.location === location); return ( <div> <h2>Local Eats Recommendations</h2> {availableEats.length > 0 ? ( <div className="cards-grid"> {availableEats.map(eat => ( <div className="card" key={eat.id}> <img src={eat.image} alt={eat.name} className="card-img" loading="lazy" /> <div className="card-content"> <h3 className="card-title">{eat.name} <span style={{fontSize: '0.9rem', color: '#667', fontWeight: '500'}}>({eat.cuisine})</span></h3> <p className="card-text">{eat.description}</p> </div> </div> ))} </div> ) : ( <p style={{textAlign: 'center', padding: '2rem'}}>No dining recommendations found for this location yet.</p> )} </div> ); };
+        const SmartPackingListView = ({ activities }) => { const fullPackingList = Array.from(new Set(activities.split(',').map(a => a.trim()).flatMap(act => packingListData[act] || []))); const [checkedItems, setCheckedItems] = useState([]); const handleCheck = (item) => { setCheckedItems(prev => prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]); }; const progress = fullPackingList.length > 0 ? (checkedItems.length / fullPackingList.length) * 100 : 0; return ( <div> <h2>Smart Packing List</h2> <p style={{marginBottom: '1rem'}}>Based on your destination's activities ({activities}).</p> <div> {fullPackingList.map(item => ( <div key={item} style={{padding: '0.5rem', fontSize: '1.1rem'}}> <label style={{cursor: 'pointer'}}> <input type="checkbox" checked={checkedItems.includes(item)} onChange={() => handleCheck(item)} style={{marginRight: '10px', transform: 'scale(1.2)'}} /> {item} </label> </div> ))} </div> <div className="progress-bar"><div className="progress-bar-inner" style={{width: `${progress}%`}}></div></div> </div> ); };
+        
+        // --- VIEW COMPONENTS ---
+        const DestinationsHub = ({ onDestinationSelect, destinations }) => {
+            const [isLoading, setIsLoading] = useState(true);
+            useEffect(() => {
+                const timer = setTimeout(() => setIsLoading(false), 500);
+                return () => clearTimeout(timer);
+            }, []);
+            return (
+                <section className="section">
+                    <div className="container">
+                        <h2 className="section-title">Latest Travel Buzz</h2>
+                        <p className="section-subtitle">Stay updated with the latest travel news and updates across India.</p>
+                        <div>
+                           {travelNewsData.map(article => <TravelNewsCard key={article.id} article={article} />)}
+                        </div>
 
-      <div class="mt-8 text-center text-sm text-gray-900">
-        <a href="#" id="toggle-auth" class="font-semibold text-blue-600 hover:text-blue-800 transition duration-300">
-          <span id="login-link">New user? Create an account</span>
-          <span id="signup-link" class="hidden">Already have an account? Log In</span>
-        </a>
-      </div>
-    </div>
-  </div>
-</div>
+                        <hr className="divider" />
+                        
+                        <h2 className="section-title">Plan Your Next Adventure</h2>
+                        <p className="section-subtitle">Select a destination to access our smart travel tools and build your perfect itinerary.</p>
+                        <div className="cards-grid">
+                            {isLoading ? ( <><SkeletonLoader /><SkeletonLoader /><SkeletonLoader /></> ) : (
+                                destinations.map(dest => <DestinationCard key={dest.id} destination={dest} onSelect={onDestinationSelect} />)
+                            )}
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+        const DestinationDetailView = ({ destination, onBookGuide, bookedGuides }) => {
+            const [activeTool, setActiveTool] = useState('planner');
+            
+            // This is a safeguard against the destination being null
+            if (!destination) {
+                return null;
+            }
 
-<!-- ---------------- HOME ---------------- -->
-<div id="home-page" class="page">
-  <header class="bg-white shadow-sm sticky top-0 z-10">
-    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-      <div class="flex items-center space-x-4">
-        <div class="text-2xl font-bold text-blue-800">TravelSecure</div>
-        <div class="relative inline-block text-left">
-          <select id="language-selector" class="block w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-            <option value="en">English</option>
-            <option value="hi">Hindi</option>
-            <option value="es">Spanish</option>
-          </select>
-        </div>
-      </div>
-      <div class="flex items-center space-x-3">
-        <div class="w-[18rem] md:w-[24rem] relative">
-          <input type="text" id="search-bar" placeholder="Search a destination..." class="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400">
-          <div id="search-results" class="absolute w-full mt-2 bg-white rounded-xl shadow-lg z-20 hidden"></div>
-        </div>
-        <button class="signout-btn bg-gray-100 border border-gray-300 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 hidden">
-          Sign out
-        </button>
-      </div>
-    </div>
-  </header>
+            const { name, image, activities } = destination;
+            
+            // Construct the proxied URL for the hero image
+            const heroImageUrl = `https://images.weserv.nl/?url=${image.replace(/^https?:\/\//, '')}`;
 
-  <main class="flex-grow container mx-auto p-4 md:p-8">
-    <section class="mb-8">
-      <h2 id="popular-destinations-title" class="text-3xl font-bold text-blue-800 mb-4">Popular Destinations in India</h2>
-      <p id="discover-message" class="text-gray-600 mb-6">Discover amazing states and villages waiting for you.</p>
-      <div id="destination-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-    </section>
+            const tools = [ { id: 'planner', name: 'AI Itinerary Planner', icon: 'fa-magic-wand-sparkles' }, { id: 'guides', name: 'Book Verified Guides', icon: 'fa-user-check' }, { id: 'packing', name: 'Smart Packing List', icon: 'fa-suitcase-rolling' }, { id: 'safety', name: 'Local Safety Hub', icon: 'fa-shield-alt' }, { id: 'expenses', name: 'Expense Tracker', icon: 'fa-wallet' }, { id: 'eats', name: 'AI Local Eats', icon: 'fa-utensils' }, ];
+            const renderTool = () => {
+                switch(activeTool) {
+                    case 'planner': return <AiPlannerView interests={activities} />;
+                    case 'guides': return <GuidesView location={name} onBook={onBookGuide} bookedGuides={bookedGuides} />;
+                    case 'eats': return <AiLocalEatsView location={name} />;
+                    case 'packing': return <SmartPackingListView activities={activities} />;
+                    case 'safety': return <SafetyHubView location={name} />;
+                    case 'expenses': return <ExpenseTrackerView />;
+                    default: return null;
+                }
+            };
+            return (
+                <div className="view-container">
+                    <section className="section" style={{paddingTop: '2rem'}}>
+                        <div className="container">
+                            <div className="destination-hero" style={{backgroundImage: `url(${heroImageUrl})`}}>
+                                <div className="destination-hero-content"><h1>{name}</h1></div>
+                            </div>
+                            <div className="detail-layout">
+                                <div className="detail-sidebar">
+                                    <h3>Trip Tools</h3>
+                                    <ul className="tool-menu">
+                                        {tools.map(tool => (
+                                            <li key={tool.id} className={`tool-menu-item ${activeTool === tool.id ? 'active' : ''}`} onClick={() => setActiveTool(tool.id)}>
+                                                <i className={`fas ${tool.icon} feature-icon`}></i> {tool.name}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                <div className="tool-content">{renderTool()}</div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            );
+        };
 
-    <section class="mb-8">
-      <h2 id="news-header" class="text-3xl font-bold text-blue-800 mb-4">Travel News</h2>
-      <div id="news-container" class="space-y-4">
-        <p id="news-placeholder" class="text-gray-500 text-center py-8">News will be displayed here from your database.</p>
-      </div>
-    </section>
-  </main>
+        // --- MAIN APP COMPONENT ---
+        const App = () => {
+            const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
+            const [authModalVisible, setAuthModalVisible] = useState(false);
+            const [view, setView] = useState('landing');
+            const [activeDestination, setActiveDestination] = useState(null);
+            const [bookedGuides, setBookedGuides] = useState([]);
 
-  <footer class="bg-blue-800 text-white shadow-lg sticky bottom-0 z-10">
-    <div class="flex justify-around items-center h-16">
-      <a href="#" id="home-nav" class="nav-icon flex flex-col items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
-        <span id="home-nav-text" class="text-xs mt-1">Home</span>
-      </a>
-      <a href="#" id="profile-nav" class="nav-icon flex flex-col items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
-        <span id="profile-nav-text" class="text-xs mt-1">Profile</span>
-      </a>
-    </div>
-  </footer>
-</div>
+            const handleLogin = async (credentials) => { if (credentials.email && credentials.password) { localStorage.setItem('token', 'mock_token_123'); setIsAuthenticated(true); setAuthModalVisible(false); } else { throw new Error('Invalid email or password'); } };
+            const handleLogout = () => {
+                localStorage.removeItem('token');
+                setIsAuthenticated(false);
+                setBookedGuides([]);
+                setActiveDestination(null);
+                setView('hub');
+            };
+            const handleBookGuide = (guide) => { if (!isAuthenticated) { setAuthModalVisible(true); return; } setBookedGuides(prev => [...prev, guide.id]); alert('Guide booked successfully!'); };
+            const handleSignup = (details) => { alert('Signup successful! Please log in to continue.'); };
+            const handleSelectDestination = (destination) => { setActiveDestination(destination); setView('details'); };
+            const handleBackToHub = () => { setActiveDestination(null); setView('hub'); };
 
-<!-- ---------------- DESTINATION ---------------- -->
-<div id="destination-page" class="page">
-  <header class="bg-white shadow-sm sticky top-0 z-10">
-    <div class="container mx-auto px-4 py-4 flex items-center justify-between">
-      <div class="flex items-center">
-        <button id="back-to-home" class="mr-4 text-blue-600 hover:text-blue-800 transition duration-300">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-        </button>
-        <h1 id="destination-title" class="text-2xl font-bold text-blue-800">Destination</h1>
-      </div>
-      <button class="signout-btn bg-gray-100 border border-gray-300 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 hidden">
-        Sign out
-      </button>
-    </div>
-  </header>
+            const appContent = () => {
+                switch(view) {
+                    case 'landing': return <LandingPage onExploreClick={() => setView('hub')} />;
+                    case 'hub': return <DestinationsHub onDestinationSelect={handleSelectDestination} destinations={destinationsData} />;
+                    case 'details': 
+                        if (activeDestination) {
+                            return <DestinationDetailView destination={activeDestination} onBookGuide={handleBookGuide} bookedGuides={bookedGuides} />;
+                        }
+                        setView('hub'); // Fallback if destination is null
+                        return null; 
+                    default: return <LandingPage onExploreClick={() => setView('hub')} />;
+                }
+            };
 
-  <main class="flex-grow container mx-auto p-4 md:p-8">
-    <section class="mb-8">
-      <h2 class="text-2xl font-semibold text-gray-700">Plan Your Trip</h2>
-      <div class="mt-4">
-        <label for="travel-date" class="text-gray-600">When do you want to come?</label>
-        <input type="date" id="travel-date" class="w-full mt-2 px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-      </div>
-      <div id="crowd-bar" class="mt-4 hidden rounded-full overflow-hidden">
-        <div id="crowd-message" class="text-sm font-semibold text-center py-2 px-4"></div>
-      </div>
-      <div id="ai-evaluation" class="mt-4 hidden p-4 bg-blue-50 rounded-xl shadow-md">
-        <h3 class="font-bold text-blue-800">AI Trip Analysis:</h3>
-        <p id="ai-response" class="text-gray-700 mt-2"></p>
-      </div>
-    </section>
+            return (
+                <div>
+                    {authModalVisible && <AuthModal onLogin={handleLogin} onSignup={handleSignup} onClose={() => setAuthModalVisible(false)} />}
+                    <Header onBack={handleBackToHub} showBackButton={view === 'details'} onLogout={handleLogout} isAuthenticated={isAuthenticated} onLoginClick={() => setAuthModalVisible(true)} />
+                    <main>{appContent()}</main>
+                    <TravelConcierge currentDestination={activeDestination?.name} />
+                </div>
+            );
+        };
 
-    <section class="mb-8">
-      <div class="tabs flex justify-around border-b border-gray-200 mb-6">
-        <button class="tab-btn active-tab p-4 font-semibold text-blue-600 border-b-2 border-blue-600 transition-colors duration-300">Hotels</button>
-        <button class="tab-btn p-4 font-semibold text-gray-500 hover:text-blue-600 transition-colors duration-300">Restaurants</button>
-        <button class="tab-btn p-4 font-semibold text-gray-500 hover:text-blue-600 transition-colors duration-300">Verified Guides</button>
-      </div>
-
-      <div id="hotels-tab" class="tab-content active-content">
-        <div id="hotels-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
-      </div>
-      <div id="restaurants-tab" class="tab-content hidden">
-        <div id="restaurants-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
-      </div>
-      <div id="guides-tab" class="tab-content hidden">
-        <div id="guides-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
-      </div>
-    </section>
-  </main>
-
-  <footer class="bg-blue-800 text-white shadow-lg sticky bottom-0 z-10">
-    <div class="flex justify-around items-center h-16">
-      <a href="#" id="home-nav-dest" class="nav-icon flex flex-col items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
-        <span class="text-xs mt-1">Home</span>
-      </a>
-      <a href="#" id="profile-nav-dest" class="nav-icon flex flex-col items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
-        <span class="text-xs mt-1">Profile</span>
-      </a>
-    </div>
-  </footer>
-</div>
-
-<!-- ---------------- PROFILE ---------------- -->
-<div id="profile-page" class="page">
-  <header class="bg-white shadow-sm sticky top-0 z-10">
-    <div class="container mx-auto px-4 py-4 flex items-center justify-between">
-      <div class="flex items-center">
-        <button id="back-from-profile" class="mr-4 text-blue-600 hover:text-blue-800 transition duration-300">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-        </button>
-        <h1 class="text-2xl font-bold text-blue-800">My Profile</h1>
-      </div>
-      <button class="signout-btn bg-gray-100 border border-gray-300 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 hidden">
-        Sign out
-      </button>
-    </div>
-  </header>
-
-  <main class="flex-grow container mx-auto p-4 md:p-8">
-    <section class="mb-8">
-      <h2 class="text-3xl font-bold text-blue-800 mb-4">Welcome, <span id="profile-username">User</span>!</h2>
-    </section>
-    <section>
-      <h2 class="text-2xl font-semibold text-gray-700 mb-4">My Bookings</h2>
-      <div id="bookings-container" class="space-y-4">
-        <p class="text-gray-500 text-center py-8" id="no-bookings-message">No bookings found.</p>
-      </div>
-    </section>
-  </main>
-
-  <footer class="bg-blue-800 text-white shadow-lg sticky bottom-0 z-10">
-    <div class="flex justify-around items-center h-16">
-      <a href="#" id="home-nav-profile" class="nav-icon flex flex-col items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
-        <span class="text-xs mt-1">Home</span>
-      </a>
-      <a href="#" id="profile-nav-profile" class="nav-icon flex flex-col items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
-        <span class="text-xs mt-1">Profile</span>
-      </a>
-    </div>
-  </footer>
-</div>
-
-<!-- ---------------- APP SCRIPT ---------------- -->
-<script>
-  // ---------- State ----------
-  let currentPage = 'login-page';
-  let currentDestinationSlug = null;
-  let DEST_CACHE = [];
-
-  async function getMyProfileName() {
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) return null;
-    const { data, error } = await supabaseClient
-      .from('profiles')
-      .select('full_name')
-      .eq('id', user.id)
-      .maybeSingle();
-    if (error) return user.email; // fallback
-    return data?.full_name || user.email;
-  }
-
-  function showSignoutButtons(show) {
-    document.querySelectorAll('.signout-btn').forEach(btn => {
-      if (show) btn.classList.remove('hidden'); else btn.classList.add('hidden');
-    });
-  }
-
-  // ---------- Navigation ----------
-  const navigateTo = async (pageId, params = {}) => {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(pageId).classList.add('active');
-    currentPage = pageId;
-
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    showSignoutButtons(!!session);
-
-    if (pageId === 'home-page') {
-      await renderDestinations();
-    } else if (pageId === 'destination-page') {
-      currentDestinationSlug = params.id;
-      await renderDestinationDetails();
-    } else if (pageId === 'profile-page') {
-      document.getElementById('profile-username').innerText = (await getMyDisplayName()) || 'Guest';
-      await renderBookings();
-    }
-  };
-
-  // ---------- Auth UI ----------
-  const loginForm = document.getElementById('login-form');
-  const signupForm = document.getElementById('signup-form');
-  const toggleAuthLink = document.getElementById('toggle-auth');
-  const loginLink = document.getElementById('login-link');
-  const signupLink = document.getElementById('signup-link');
-
-  toggleAuthLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    loginForm.classList.toggle('hidden');
-    signupForm.classList.toggle('hidden');
-    loginLink.classList.toggle('hidden');
-    signupLink.classList.toggle('hidden');
-    signupForm.reset();
-  });
-
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('login-username').value.trim();
-    const password = document.getElementById('login-password').value;
-
-    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-    if (error) return alert(error.message);
-
-    localStorage.setItem('currentUser', data.user.email || data.user.id);
-    
-    await ensureProfileRow();    
-    navigateTo('home-page');
-  });
-
-  signupForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-  const fullName = document.getElementById('signup-fullname').value.trim();
-  const email = document.getElementById('signup-contact').value.trim();
-  const password = document.getElementById('signup-password').value;
-
-  const { data, error } = await supabaseClient.auth.signUp({
-    email,
-    password,
-    options: { data: { full_name: fullName } }   // IMPORTANT
-  });
-  if (error) return alert('Signup failed: ' + error.message);
-
-  alert('Signup successful. If email confirmation is enabled, please confirm your email.');
-  navigateTo('home-page');
-  });
-
-  // Sign out (all buttons)
-  document.querySelectorAll('.signout-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      await supabaseClient.auth.signOut();
-      localStorage.removeItem('currentUser');
-      DEST_CACHE = [];
-      navigateTo('login-page');
-    });
-  });
-
-  // ---------- Home: list & search ----------
-  const destinationGrid = document.getElementById('destination-grid');
-  const searchBar = document.getElementById('search-bar');
-  const searchResultsContainer = document.getElementById('search-results');
-  const navIcons = document.querySelectorAll('.nav-icon');
-
-  async function fetchDestinations() {
-    const { data, error } = await supabaseClient
-      .from('destinations')
-      .select('*')
-      .order('name', { ascending: true });
-    if (error) { console.error(error); return []; }
-    return data;
-  }
-
-  async function renderDestinations() {
-    if (!DEST_CACHE.length) DEST_CACHE = await fetchDestinations();
-    destinationGrid.innerHTML = '';
-    DEST_CACHE.forEach(dest => {
-      const card = document.createElement('div');
-      card.className = 'bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer';
-      card.innerHTML = `
-        <img src="${dest.image_url}" alt="${dest.name}" class="w-full h-48 object-cover rounded-t-xl">
-        <div class="p-4">
-          <h3 class="font-bold text-xl text-blue-800">${dest.name}</h3>
-          <p class="text-gray-600 mt-2">Discover the best of ${dest.name} with our trusted services.</p>
-        </div>`;
-      card.addEventListener('click', () => navigateTo('destination-page', { id: dest.slug }));
-      destinationGrid.appendChild(card);
-    });
-  }
-
-  function renderSearchResults(results) {
-    searchResultsContainer.innerHTML = '';
-    if (!results.length) {
-      searchResultsContainer.innerHTML = `<p class="p-4 text-center text-gray-500">No destinations found.</p>`;
-      return;
-    }
-    results.forEach(dest => {
-      const a = document.createElement('a');
-      a.href = '#';
-      a.className = 'block p-4 hover:bg-gray-100 transition-colors duration-300 rounded-xl';
-      a.innerHTML = `<h3 class="font-semibold text-gray-800">${dest.name}</h3>
-                     <p class="text-sm text-gray-500">${dest.state}</p>`;
-      a.addEventListener('click', (e) => {
-        e.preventDefault();
-        searchResultsContainer.classList.add('hidden');
-        navigateTo('destination-page', { id: dest.slug });
-      });
-      searchResultsContainer.appendChild(a);
-    });
-  }
-
-  
-  searchBar.addEventListener('input', async () => {
-    const q = searchBar.value.toLowerCase();
-    if (!DEST_CACHE.length) DEST_CACHE = await fetchDestinations();
-    if (q.length) {
-      searchResultsContainer.classList.remove('hidden');
-      renderSearchResults(
-        DEST_CACHE.filter(d => d.name.toLowerCase().includes(q) || d.state.toLowerCase().includes(q))
-      );
-    } else {
-      searchResultsContainer.classList.add('hidden');
-      renderDestinations();
-    }
-  });
-
-  navIcons.forEach(icon => {
-    icon.addEventListener('click', (e) => {
-      e.preventDefault();
-      navIcons.forEach(n => n.classList.remove('active-nav'));
-      icon.classList.add('active-nav');
-    });
-  });
-
-  // ---------- Destination page ----------
-  const destinationTitle = document.getElementById('destination-title');
-  const hotelsGrid = document.getElementById('hotels-grid');
-  const restaurantsGrid = document.getElementById('restaurants-grid');
-  const guidesGrid = document.getElementById('guides-grid');
-  const travelDateInput = document.getElementById('travel-date');
-  const crowdBar = document.getElementById('crowd-bar');
-  const crowdMessage = document.getElementById('crowd-message');
-  const tabBtns = document.querySelectorAll('.tab-btn');
-  const tabContents = document.querySelectorAll('.tab-content');
-
-  tabBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      tabBtns.forEach(b => b.classList.remove('active-tab', 'text-blue-600', 'border-blue-600'));
-      tabBtns.forEach(b => b.classList.add('text-gray-500', 'border-b-2', 'border-transparent'));
-      btn.classList.add('active-tab', 'text-blue-600', 'border-blue-600');
-      btn.classList.remove('text-gray-500', 'border-b-2', 'border-transparent');
-      tabContents.forEach(c => c.classList.add('hidden'));
-      const targetId = btn.innerText.toLowerCase().replace(/\s/g, '-') + '-tab';
-      document.getElementById(targetId).classList.remove('hidden');
-    });
-  });
-
-  async function fetchDestinationWithItems(slug) {
-    const { data: dest, error: e1 } = await supabaseClient
-      .from('destinations')
-      .select('id, slug, name, state, image_url, peak_months')
-      .eq('slug', slug)
-      .single();
-    if (e1 || !dest) return null;
-    const [h, r, g] = await Promise.all([
-      supabaseClient.from('hotels').select('*').eq('destination_id', dest.id),
-      supabaseClient.from('restaurants').select('*').eq('destination_id', dest.id),
-      supabaseClient.from('guides').select('*').eq('destination_id', dest.id),
-    ]);
-    return { destination: dest, hotels: h.data || [], restaurants: r.data || [], guides: g.data || [] };
-  }
-
-async function ensureProfileRow() {
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  if (!user) return;
-  const nameFromAuth = user.user_metadata?.full_name || '';
-
-  const { data: row } = await supabaseClient
-    .from('profiles').select('id, full_name').eq('id', user.id).maybeSingle();
-
-  if (!row) {
-    await supabaseClient.from('profiles').insert({ id: user.id, full_name: nameFromAuth });
-  } else if (!row.full_name && nameFromAuth) {
-    await supabaseClient.from('profiles').update({ full_name: nameFromAuth }).eq('id', user.id);
-  }
-}
-
-// call after successful login and in onAuthStateChange
-async function getMyDisplayName() {
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  if (!user) return 'Guest';
-  const { data: row } = await supabaseClient
-    .from('profiles').select('full_name').eq('id', user.id).maybeSingle();
-  return (row?.full_name && row.full_name.trim()) ? row.full_name
-       : (user.user_metadata?.full_name || user.email || 'Guest');
-}
-
-
-  async function renderDestinationDetails() {
-    if (!currentDestinationSlug) return;
-    const data = await fetchDestinationWithItems(currentDestinationSlug);
-    if (!data) { destinationTitle.innerText = "Destination Not Found"; return; }
-
-    const { destination: dest, hotels, restaurants, guides } = data;
-    destinationTitle.innerText = dest.name;
-
-    hotelsGrid.innerHTML = hotels.map(item => `
-      <div class="bg-white rounded-xl shadow-lg p-4">
-        <h3 class="font-semibold text-lg">${item.name}</h3>
-        <p class="text-gray-600 text-sm mt-1">${item.price}</p>
-        <div class="flex justify-between items-center mt-3">
-          <span class="bg-green-500 text-white text-xs font-bold py-1 px-3 rounded-full">${item.verified ? '✔ Verified' : ''}</span>
-          <button class="book-now-btn bg-blue-600 text-white text-sm font-semibold py-2 px-4 rounded-xl hover:bg-blue-700 transition">Book Now</button>
-        </div>
-      </div>`).join('');
-
-    restaurantsGrid.innerHTML = restaurants.map(item => `
-      <div class="bg-white rounded-xl shadow-lg p-4">
-        <h3 class="font-semibold text-lg">${item.name}</h3>
-        <p class="text-gray-600 text-sm mt-1">${item.price}</p>
-        <div class="flex justify-between items-center mt-3">
-          <span class="bg-green-500 text-white text-xs font-bold py-1 px-3 rounded-full">${item.verified ? '✔ Verified' : ''}</span>
-          <button class="book-now-btn bg-blue-600 text-white text-sm font-semibold py-2 px-4 rounded-xl hover:bg-blue-700 transition">Book Now</button>
-        </div>
-      </div>`).join('');
-
-    guidesGrid.innerHTML = guides.map(item => `
-      <div class="bg-white rounded-xl shadow-lg p-4">
-        <h3 class="font-semibold text-lg">${item.name}</h3>
-        <p class="text-gray-600 text-sm mt-1">${item.price}</p>
-        <div class="flex justify-between items-center mt-3">
-          <span class="bg-green-500 text-white text-xs font-bold py-1 px-3 rounded-full">${item.verified ? '✔ Verified' : ''}</span>
-          <button class="book-now-btn bg-blue-600 text-white text-sm font-semibold py-2 px-4 rounded-xl hover:bg-blue-700 transition">Book Now</button>
-        </div>
-      </div>`).join('');
-
-    attachBookingHandlers(dest.id, dest.peak_months);
-  }
-
-  function attachBookingHandlers(destinationId, peakMonths) {
-    document.querySelectorAll('.book-now-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const card = btn.closest('.bg-white');
-        const itemName = card.querySelector('h3').textContent;
-        const itemPrice = card.querySelector('p').textContent;
-        const tabId = btn.closest('.tab-content').id.replace('-tab', ''); // hotels|restaurants|guides
-        const travelDate = document.getElementById('travel-date').value;
-        if (!travelDate) return alert('Please select a travel date before booking.');
-
-        const { data: { user } } = await supabaseClient.auth.getUser();
-        if (!user) return alert('Please log in.');
-
-        const itemType = tabId === 'hotels' ? 'Hotel' : tabId === 'restaurants' ? 'Restaurant' : 'Guide';
-        const { error } = await supabaseClient.from('bookings').insert({
-          user_id: user.id,
-          destination_id: destinationId,
-          date: travelDate,
-          item_type: itemType,
-          item_name: itemName,
-          price: itemPrice
-        });
-        if (error) return alert('Booking failed: ' + error.message);
-
-        alert('Booking successful!');
-        navigateTo('profile-page');
-      });
-    });
-
-    // Crowd bar from peakMonths
-    document.getElementById('travel-date').onchange = (e) => {
-      const selected = e.target.value;
-      const month = new Date(selected).getMonth() + 1;
-      crowdBar.classList.remove('bg-green-400', 'bg-red-400');
-      crowdBar.classList.add('hidden');
-      if (peakMonths && peakMonths.length) {
-        const isPeak = peakMonths.includes(month);
-        crowdBar.classList.remove('hidden');
-        if (isPeak) {
-          crowdBar.classList.add('bg-red-400');
-          crowdMessage.textContent = "High season - expect more people!";
-        } else {
-          crowdBar.classList.add('bg-green-400');
-          crowdMessage.textContent = "Off-season - expect fewer people!";
-        }
-      }
-    };
-  }
-
-  // ---------- Profile: bookings ----------
-  async function fetchMyBookings() {
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) return [];
-    const { data, error } = await supabaseClient
-      .from('bookings')
-      .select('*, destination:destinations(name, slug)')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-    if (error) { console.error(error); return []; }
-    return data;
-  }
-
-  async function renderBookings() {
-    const bookingsContainer = document.getElementById('bookings-container');
-    const rows = await fetchMyBookings();
-    if (!rows.length) {
-      bookingsContainer.innerHTML = `<p class="text-gray-500 text-center py-8">No bookings found for your account.</p>`;
-      return;
-    }
-    bookingsContainer.innerHTML = rows.map(b => `
-      <div class="bg-white rounded-xl shadow-lg p-4 flex justify-between items-center">
-        <div>
-          <h3 class="font-semibold text-lg">${b.item_name}</h3>
-          <p class="text-gray-600 text-sm">Destination: ${b.destination?.name || ''}</p>
-          <p class="text-gray-600 text-sm">Date: ${b.date}</p>
-        </div>
-        <div class="text-right">
-          <span class="text-blue-600 font-bold">${b.price}</span>
-          <p class="text-gray-500 text-xs mt-1">Booked: ${b.item_type}</p>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  // ---------- Language ----------
-  const translations = {
-    en: {
-      'popular-destinations': 'Popular Destinations in India',
-      'discover-message': 'Discover amazing states and villages waiting for you.',
-      'search-placeholder': 'Search a destination...',
-      'news-header': 'Travel News',
-      'news-placeholder': 'News will be displayed here from your database.',
-      'home-nav': 'Home', 'profile-nav': 'Profile',
-    },
-    hi: {
-      'popular-destinations': 'भारत में लोकप्रिय गंतव्य',
-      'discover-message': 'आपके लिए इंतजार कर रहे अद्भुत राज्यों और गांवों की खोज करें।',
-      'search-placeholder': 'एक गंतव्य खोजें...',
-      'news-header': 'यात्रा समाचार',
-      'news-placeholder': 'आपके डेटाबेस से समाचार यहां प्रदर्शित किए जाएंगे।',
-      'home-nav': 'होम', 'profile-nav': 'प्रोफ़ाइल',
-    },
-    es: {
-      'popular-destinations': 'Destinos populares en India',
-      'discover-message': 'Descubre estados y pueblos asombrosos esperándote.',
-      'search-placeholder': 'Buscar un destino...',
-      'news-header': 'Noticias de viaje',
-      'news-placeholder': 'Las noticias se mostrarán aquí desde su base de datos.',
-      'home-nav': 'Inicio', 'profile-nav': 'Perfil',
-    }
-  };
-  const languageSelector = document.getElementById('language-selector');
-  function applyTranslations(lang) {
-    const t = translations[lang]; if (!t) return;
-    document.getElementById('popular-destinations-title').textContent = t['popular-destinations'];
-    document.getElementById('discover-message').textContent = t['discover-message'];
-    document.getElementById('search-bar').placeholder = t['search-placeholder'];
-    document.getElementById('news-header').textContent = t['news-header'];
-    document.getElementById('news-placeholder').textContent = t['news-placeholder'];
-    document.getElementById('home-nav-text').textContent = t['home-nav'];
-    document.getElementById('profile-nav-text').textContent = t['profile-nav'];
-  }
-  if (languageSelector) languageSelector.addEventListener('change', (e) => applyTranslations(e.target.value));
-
-  // ---------- Init ----------
-  document.getElementById('back-to-home')?.addEventListener('click', (e) => { e.preventDefault(); navigateTo('home-page'); });
-  document.getElementById('back-from-profile')?.addEventListener('click', (e) => { e.preventDefault(); navigateTo('home-page'); });
-  document.getElementById('home-nav')?.addEventListener('click', (e) => { e.preventDefault(); navigateTo('home-page'); });
-  document.getElementById('profile-nav')?.addEventListener('click', (e) => { e.preventDefault(); navigateTo('profile-page'); });
-  document.getElementById('home-nav-dest')?.addEventListener('click', (e) => { e.preventDefault(); navigateTo('home-page'); });
-  document.getElementById('profile-nav-dest')?.addEventListener('click', (e) => { e.preventDefault(); navigateTo('profile-page'); });
-  document.getElementById('home-nav-profile')?.addEventListener('click', (e) => { e.preventDefault(); navigateTo('home-page'); });
-  document.getElementById('profile-nav-profile')?.addEventListener('click', (e) => { e.preventDefault(); navigateTo('profile-page'); });
-
-  // Start on login if no session, else go home. Also listen to auth state changes.
-  (async () => {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (session) navigateTo('home-page'); else navigateTo('login-page');
-    if (languageSelector) applyTranslations(languageSelector.value);
-
-    supabaseClient.auth.onAuthStateChange(async (_event, sessionNow) => {
-  if (sessionNow) await ensureProfileRow();
-});
-  })();
-</script>
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>
